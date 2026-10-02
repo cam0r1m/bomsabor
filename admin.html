@@ -47,14 +47,10 @@
 
     <main class="max-w-xl mx-auto p-4 space-y-6">
       
-      <!-- CONTROLE DE FUNCIONAMENTO (LIGAR / DESLIGAR) -->
+      <!-- CONTROLE DE FUNCIONAMENTO -->
       <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg text-center space-y-3">
         <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Status do Restaurante</h2>
-        
-        <div id="status-indicator" class="text-sm font-bold py-2 px-4 rounded-lg inline-block">
-          Carregando status...
-        </div>
-
+        <div id="status-indicator" class="text-sm font-bold py-2 px-4 rounded-lg inline-block">Carregando status...</div>
         <button id="toggle-status-btn" onclick="toggleStoreStatus()" class="w-full py-4 rounded-xl font-black text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
           <i class="fa-solid fa-power-off"></i> Alterar Status
         </button>
@@ -67,77 +63,88 @@
         </h2>
         <div class="flex gap-2">
           <input type="text" id="admin-whatsapp" placeholder="Ex: 5598985190033" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-          <button onclick="saveWhatsAppConfig()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-4 rounded-lg text-xs">
-            Salvar
-          </button>
+          <button onclick="saveWhatsAppConfig()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-4 rounded-lg text-xs">Salvar</button>
         </div>
-        <p class="text-[11px] text-zinc-500">Insira o código do país + DDD + número (Ex: 5598985190033)</p>
       </section>
 
-      <!-- GESTÃO DO CARDÁPIO -->
+      <!-- GESTÃO DOS ESPETINHOS -->
       <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-4">
         <div class="flex justify-between items-center">
-          <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-utensils text-amber-500"></i> Gestão do Cardápio
+          <h2 class="text-sm font-semibold text-amber-500 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-utensils"></i> Espetinhos
           </h2>
           <button onclick="openProductModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
-            <i class="fa-solid fa-plus"></i> Novo Item
+            <i class="fa-solid fa-plus"></i> Novo Espetinho
           </button>
         </div>
+        <div id="admin-products-list" class="space-y-3"></div>
+      </section>
 
-        <div id="admin-products-list" class="space-y-3">
-          <!-- Lista dinâmica -->
+      <!-- GESTÃO DE BEBIDAS -->
+      <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-sm font-semibold text-amber-500 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-bottle-water"></i> Bebidas
+          </h2>
+          <button onclick="openSimpleItemModal('bebidas')" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> Nova Bebida
+          </button>
         </div>
+        <div id="admin-bebidas-list" class="space-y-3"></div>
+      </section>
+
+      <!-- GESTÃO DE ADICIONAIS -->
+      <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-sm font-semibold text-amber-500 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-bowl-rice"></i> Adicionais / Acompanhamentos
+          </h2>
+          <button onclick="openSimpleItemModal('adicionais')" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> Novo Adicional
+          </button>
+        </div>
+        <div id="admin-adicionais-list" class="space-y-3"></div>
       </section>
 
     </main>
-
   </div>
 
-  <!-- MODAL DE ADD / EDITAR PRODUTO -->
+  <!-- MODAL PRODUTO (ESPETINHO) -->
   <div id="product-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-        <h3 id="modal-title" class="text-base font-bold text-amber-500">Adicionar Produto</h3>
-        <button onclick="closeProductModal()" class="text-zinc-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <h3 id="modal-title" class="text-base font-bold text-amber-500">Adicionar Espetinho</h3>
+        <button onclick="closeProductModal()" class="text-zinc-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form id="product-form" onsubmit="saveProduct(event)" class="space-y-3">
         <input type="hidden" id="prod-id">
-
         <div>
-          <label class="block text-xs text-zinc-300 mb-1">Nome do Espetinho / Item</label>
-          <input type="text" id="prod-nome" required placeholder="Ex: Espeto de Carne Bovina" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+          <label class="block text-xs text-zinc-300 mb-1">Nome</label>
+          <input type="text" id="prod-nome" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
         </div>
-
         <div>
           <label class="block text-xs text-zinc-300 mb-1">Descrição</label>
-          <input type="text" id="prod-descricao" placeholder="Ex: Suculento espeto assado na brasa" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+          <input type="text" id="prod-descricao" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
         </div>
-
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-xs text-zinc-300 mb-1">Preço Simples (R$)</label>
-            <input type="number" step="0.5" id="prod-preco-simples" required placeholder="10.00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+            <input type="number" step="0.5" id="prod-preco-simples" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
           </div>
           <div>
             <label class="block text-xs text-zinc-300 mb-1">Preço Completo (R$)</label>
-            <input type="number" step="0.5" id="prod-preco-completo" required placeholder="20.00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+            <input type="number" step="0.5" id="prod-preco-completo" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
           </div>
         </div>
-
         <div>
           <label class="block text-xs text-zinc-300 mb-1">URL da Imagem</label>
-          <input type="url" id="prod-imagem" placeholder="https://..." class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+          <input type="url" id="prod-imagem" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
         </div>
-
         <div class="flex items-center gap-2 pt-2">
           <input type="checkbox" id="prod-disponivel" checked class="w-4 h-4 accent-amber-500">
-          <label for="prod-disponivel" class="text-xs text-zinc-300">Produto Ativo / Disponível</label>
+          <label for="prod-disponivel" class="text-xs text-zinc-300">Disponível</label>
         </div>
-
         <div class="flex justify-end gap-2 pt-3">
           <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-bold">Cancelar</button>
           <button type="submit" class="px-5 py-2 bg-amber-500 text-black rounded-lg text-xs font-bold">Salvar</button>
@@ -146,10 +153,38 @@
     </div>
   </div>
 
+  <!-- MODAL SIMPLES (BEBIDAS E ADICIONAIS) -->
+  <div id="simple-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+        <h3 id="simple-modal-title" class="text-base font-bold text-amber-500">Adicionar Item</h3>
+        <button onclick="closeSimpleModal()" class="text-zinc-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="simple-form" onsubmit="saveSimpleItem(event)" class="space-y-3">
+        <input type="hidden" id="simple-type">
+        <input type="hidden" id="simple-id">
+        <div>
+          <label class="block text-xs text-zinc-300 mb-1">Nome</label>
+          <input type="text" id="simple-nome" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-300 mb-1">Preço (R$)</label>
+          <input type="number" step="0.5" id="simple-preco" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+        </div>
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" id="simple-disponivel" checked class="w-4 h-4 accent-amber-500">
+          <label for="simple-disponivel" class="text-xs text-zinc-300">Disponível</label>
+        </div>
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="closeSimpleModal()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-bold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 bg-amber-500 text-black rounded-lg text-xs font-bold">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
-    // ========================================================
-    // 1. CONFIGURAÇÃO DO FIREBASE
-    // ========================================================
     const firebaseConfig = {
   apiKey: "AIzaSyCHQhXMtPfkD9j4KCJPPjgk1c_eRZe3WHA",
   authDomain: "churrasco-bom-sabor.firebaseapp.com",
@@ -160,26 +195,17 @@
 };
 
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const HARDCODED_PASS = "churrasco2026";
     let isStoreOpen = false;
 
-    // ========================================================
-    // 2. AUTENTICAÇÃO
-    // ========================================================
     document.addEventListener('DOMContentLoaded', () => {
-      if (sessionStorage.getItem('admin_authenticated') === 'true') {
-        showDashboard();
-      }
+      if (sessionStorage.getItem('admin_authenticated') === 'true') showDashboard();
     });
 
     function checkAdminPassword() {
-      const input = document.getElementById('admin-pass').value;
-      if (input === HARDCODED_PASS) {
+      if (document.getElementById('admin-pass').value === HARDCODED_PASS) {
         sessionStorage.setItem('admin_authenticated', 'true');
         showDashboard();
       } else {
@@ -198,90 +224,60 @@
       window.location.reload();
     }
 
-    // ========================================================
-    // 3. LEITURA E ALTERAÇÃO DO STATUS
-    // ========================================================
     function listenAdminData() {
-      // Escuta Configuração
       db.ref('config').on('value', (snapshot) => {
         const config = snapshot.val() || {};
         isStoreOpen = config.aberto ?? true;
-        if (config.whatsapp) {
-          document.getElementById('admin-whatsapp').value = config.whatsapp;
-        }
+        if (config.whatsapp) document.getElementById('admin-whatsapp').value = config.whatsapp;
         updateStatusUI();
       });
 
-      // Escuta Produtos
-      db.ref('produtos').on('value', (snapshot) => {
-        const products = snapshot.val() || {};
-        renderAdminProducts(products);
-      });
+      db.ref('produtos').on('value', (snapshot) => renderAdminProducts(snapshot.val() || {}));
+      db.ref('bebidas').on('value', (snapshot) => renderSimpleList('bebidas', snapshot.val() || {}));
+      db.ref('adicionais').on('value', (snapshot) => renderSimpleList('adicionais', snapshot.val() || {}));
     }
 
     function updateStatusUI() {
       const indicator = document.getElementById('status-indicator');
       const btn = document.getElementById('toggle-status-btn');
-
       if (isStoreOpen) {
         indicator.className = "text-sm font-bold py-2 px-4 rounded-lg inline-block bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
-        indicator.innerHTML = '<i class="fa-solid fa-circle text-xs mr-1 animate-pulse"></i> RESTAURANTE ABERTO';
-
-        btn.className = "w-full py-4 rounded-xl font-black text-lg shadow-xl bg-red-600 hover:bg-red-700 text-white transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer";
-        btn.innerHTML = '<i class="fa-solid fa-power-off"></i> FECHAR RESTAURANTE AGORA';
+        indicator.innerHTML = '<i class="fa-solid fa-circle text-xs mr-1 animate-pulse"></i> ABERTO';
+        btn.className = "w-full py-3 rounded-xl font-black text-sm bg-red-600 hover:bg-red-700 text-white cursor-pointer";
+        btn.innerHTML = 'FECHAR RESTAURANTE';
       } else {
         indicator.className = "text-sm font-bold py-2 px-4 rounded-lg inline-block bg-red-500/10 border border-red-500/30 text-red-400";
-        indicator.innerHTML = '<i class="fa-solid fa-circle text-xs mr-1"></i> RESTAURANTE FECHADO';
-
-        btn.className = "w-full py-4 rounded-xl font-black text-lg shadow-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer";
-        btn.innerHTML = '<i class="fa-solid fa-power-off"></i> ABRIR RESTAURANTE AGORA';
+        indicator.innerHTML = '<i class="fa-solid fa-circle text-xs mr-1"></i> FECHADO';
+        btn.className = "w-full py-3 rounded-xl font-black text-sm bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer";
+        btn.innerHTML = 'ABRIR RESTAURANTE';
       }
     }
 
-    function toggleStoreStatus() {
-      db.ref('config/aberto').set(!isStoreOpen);
-    }
-
+    function toggleStoreStatus() { db.ref('config/aberto').set(!isStoreOpen); }
     function saveWhatsAppConfig() {
       const phone = document.getElementById('admin-whatsapp').value.trim();
-      if (!phone) return alert("Digite um número válido");
-      db.ref('config/whatsapp').set(phone).then(() => {
-        alert("Número do WhatsApp atualizado com sucesso!");
-      });
+      if (phone) db.ref('config/whatsapp').set(phone).then(() => alert("WhatsApp atualizado!"));
     }
 
-    // ========================================================
-    // 4. CRUD DE PRODUTOS
-    // ========================================================
+    // CRUD ESPETINHOS
     function renderAdminProducts(products) {
       const container = document.getElementById('admin-products-list');
       container.innerHTML = '';
-
-      const keys = Object.keys(products);
-      if (keys.length === 0) {
-        container.innerHTML = '<p class="text-xs text-zinc-500">Nenhum produto cadastrado.</p>';
-        return;
-      }
-
-      keys.forEach(key => {
+      Object.keys(products).forEach(key => {
         const p = products[key];
         const card = document.createElement('div');
         card.className = "bg-zinc-800/60 p-3 rounded-xl border border-zinc-700/60 flex items-center justify-between";
         card.innerHTML = `
           <div class="flex items-center gap-3">
-            <img src="${p.imagem || 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded-lg border border-zinc-700">
+            <img src="${p.imagem || 'https://via.placeholder.com/50'}" class="w-10 h-10 object-cover rounded-lg">
             <div>
-              <p class="font-bold text-sm text-white">${p.nome} ${p.disponivel ? '' : '<span class="text-[10px] bg-red-900 text-red-200 px-1 rounded">(Indisponível)</span>'}</p>
-              <p class="text-xs text-amber-400 font-semibold">Simples: R$ ${parseFloat(p.precoSimples || 0).toFixed(2)} | Completo: R$ ${parseFloat(p.precoCompleto || 0).toFixed(2)}</p>
+              <p class="font-bold text-sm text-white">${p.nome} ${!p.disponivel ? '<span class="text-red-400 text-xs">(Indisponível)</span>' : ''}</p>
+              <p class="text-xs text-amber-400">Simples: R$ ${parseFloat(p.precoSimples||0).toFixed(2)} | Completo: R$ ${parseFloat(p.precoCompleto||0).toFixed(2)}</p>
             </div>
           </div>
           <div class="flex gap-2">
-            <button onclick="editProduct('${key}')" class="text-amber-400 hover:text-amber-300 p-2 bg-zinc-800 rounded-lg">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button onclick="deleteProduct('${key}')" class="text-red-400 hover:text-red-300 p-2 bg-zinc-800 rounded-lg">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+            <button onclick="editProduct('${key}')" class="text-amber-400 p-2"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteItem('produtos', '${key}')" class="text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>
           </div>
         `;
         container.appendChild(card);
@@ -291,8 +287,7 @@
     function openProductModal(prodId = null) {
       document.getElementById('product-form').reset();
       document.getElementById('prod-id').value = '';
-      document.getElementById('modal-title').innerText = "Adicionar Produto";
-
+      document.getElementById('modal-title').innerText = "Adicionar Espetinho";
       if (prodId) {
         db.ref(`produtos/${prodId}`).once('value', (snapshot) => {
           const p = snapshot.val();
@@ -304,28 +299,20 @@
             document.getElementById('prod-preco-completo').value = p.precoCompleto || 20;
             document.getElementById('prod-imagem').value = p.imagem || '';
             document.getElementById('prod-disponivel').checked = p.disponivel ?? true;
-            document.getElementById('modal-title').innerText = "Editar Produto";
+            document.getElementById('modal-title').innerText = "Editar Espetinho";
           }
         });
       }
-
       document.getElementById('product-modal').classList.remove('hidden');
     }
-
-    function closeProductModal() {
-      document.getElementById('product-modal').classList.add('hidden');
-    }
-
-    function editProduct(key) {
-      openProductModal(key);
-    }
+    function closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); }
+    function editProduct(key) { openProductModal(key); }
 
     function saveProduct(event) {
       event.preventDefault();
       const id = document.getElementById('prod-id').value || db.ref('produtos').push().key;
-
       const data = {
-        id: id,
+        id,
         nome: document.getElementById('prod-nome').value,
         descricao: document.getElementById('prod-descricao').value,
         precoSimples: parseFloat(document.getElementById('prod-preco-simples').value),
@@ -334,15 +321,69 @@
         disponivel: document.getElementById('prod-disponivel').checked,
         categoria: "Espetinhos"
       };
+      db.ref(`produtos/${id}`).set(data).then(() => closeProductModal());
+    }
 
-      db.ref(`produtos/${id}`).set(data).then(() => {
-        closeProductModal();
+    // CRUD SIMPLES (BEBIDAS E ADICIONAIS)
+    function renderSimpleList(nodeType, data) {
+      const container = document.getElementById(`admin-${nodeType}-list`);
+      container.innerHTML = '';
+      Object.keys(data).forEach(key => {
+        const item = data[key];
+        const card = document.createElement('div');
+        card.className = "bg-zinc-800/60 p-3 rounded-xl border border-zinc-700/60 flex items-center justify-between";
+        card.innerHTML = `
+          <div>
+            <p class="font-bold text-sm text-white">${item.nome} ${!item.disponivel ? '<span class="text-red-400 text-xs">(Indisponível)</span>' : ''}</p>
+            <p class="text-xs text-amber-400">R$ ${parseFloat(item.preco||0).toFixed(2)}</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editSimpleItem('${nodeType}', '${key}')" class="text-amber-400 p-2"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteItem('${nodeType}', '${key}')" class="text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(card);
       });
     }
 
-    function deleteProduct(key) {
-      if (confirm("Tem certeza que deseja excluir este espetinho?")) {
-        db.ref(`produtos/${key}`).remove();
+    function openSimpleItemModal(nodeType, itemId = null) {
+      document.getElementById('simple-form').reset();
+      document.getElementById('simple-type').value = nodeType;
+      document.getElementById('simple-id').value = '';
+      document.getElementById('simple-modal-title').innerText = nodeType === 'bebidas' ? "Adicionar Bebida" : "Adicionar Adicional";
+
+      if (itemId) {
+        db.ref(`${nodeType}/${itemId}`).once('value', (snapshot) => {
+          const item = snapshot.val();
+          if (item) {
+            document.getElementById('simple-id').value = itemId;
+            document.getElementById('simple-nome').value = item.nome || '';
+            document.getElementById('simple-preco').value = item.preco || 0;
+            document.getElementById('simple-disponivel').checked = item.disponivel ?? true;
+            document.getElementById('simple-modal-title').innerText = nodeType === 'bebidas' ? "Editar Bebida" : "Editar Adicional";
+          }
+        });
+      }
+      document.getElementById('simple-modal').classList.remove('hidden');
+    }
+    function closeSimpleModal() { document.getElementById('simple-modal').classList.add('hidden'); }
+    function editSimpleItem(nodeType, key) { openSimpleItemModal(nodeType, key); }
+
+    function saveSimpleItem(event) {
+      event.preventDefault();
+      const nodeType = document.getElementById('simple-type').value;
+      const id = document.getElementById('simple-id').value || db.ref(nodeType).push().key;
+      const data = {
+        nome: document.getElementById('simple-nome').value,
+        preco: parseFloat(document.getElementById('simple-preco').value),
+        disponivel: document.getElementById('simple-disponivel').checked
+      };
+      db.ref(`${nodeType}/${id}`).set(data).then(() => closeSimpleModal());
+    }
+
+    function deleteItem(nodeType, key) {
+      if (confirm("Tem certeza que deseja excluir este item?")) {
+        db.ref(`${nodeType}/${key}`).remove();
       }
     }
   </script>
