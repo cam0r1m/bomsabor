@@ -433,62 +433,57 @@
     }
 
     function sendOrderToWhatsApp() {
-  // Trava de segurança: impede o envio caso o restaurante esteja fechado
-  if (!isStoreOpen) {
-    alert("O restaurante está FECHADO no momento. Não é possível finalizar nem enviar pedidos.");
-    return; // Interrompe a execução
-  }
+      if (!isStoreOpen) return alert("O restaurante está fechado!");
 
-  const items = Object.values(cart);
-  if (items.length === 0) return alert("Carrinho vazio!");
+      const items = Object.values(cart);
+      if (items.length === 0) return alert("Carrinho vazio!");
 
-  const name = document.getElementById('cust-name').value.trim();
-  const deliveryType = document.querySelector('input[name="delivery-type"]:checked').value;
-  const street = document.getElementById('cust-street').value.trim();
-  const bairro = document.getElementById('cust-bairro').value.trim();
-  const ref = document.getElementById('cust-ref').value.trim();
-  const payment = document.getElementById('cust-payment').value;
-  const change = document.getElementById('cust-change').value.trim();
-  const notes = document.getElementById('cust-notes').value.trim();
+      const name = document.getElementById('cust-name').value.trim();
+      const deliveryType = document.querySelector('input[name="delivery-type"]:checked').value;
+      const street = document.getElementById('cust-street').value.trim();
+      const bairro = document.getElementById('cust-bairro').value.trim();
+      const ref = document.getElementById('cust-ref').value.trim();
+      const payment = document.getElementById('cust-payment').value;
+      const change = document.getElementById('cust-change').value.trim();
+      const notes = document.getElementById('cust-notes').value.trim();
 
-  if (!name) return alert("Preencha o seu Nome.");
-  if (deliveryType === 'Entrega' && (!street || !bairro)) return alert("Preencha o Endereço para entrega.");
+      if (!name) return alert("Preencha o seu Nome.");
+      if (deliveryType === 'Entrega' && (!street || !bairro)) return alert("Preencha o Endereço para entrega.");
 
-  localStorage.setItem('churrasco_bom_sabor_cliente', JSON.stringify({ nome: name, rua: street, bairro: bairro, referencia: ref }));
+      localStorage.setItem('churrasco_bom_sabor_cliente', JSON.stringify({ nome: name, rua: street, bairro: bairro, referencia: ref }));
 
-  let total = 0;
-  let textItems = "";
-  items.forEach(item => {
-    const subtotal = item.preco * item.qty;
-    total += subtotal;
-    const itemTitle = item.tipo ? `${item.nome} (${item.tipo})` : item.nome;
-    textItems += `• *${item.qty}x* ${itemTitle} - R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
-  });
+      let total = 0;
+      let textItems = "";
+      items.forEach(item => {
+        const subtotal = item.preco * item.qty;
+        total += subtotal;
+        const itemTitle = item.tipo ? `${item.nome} (${item.tipo})` : item.nome;
+        textItems += `• *${item.qty}x* ${itemTitle} - R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+      });
 
-  let msg = `🔥 *NOVO PEDIDO - CHURRASCO BOM SABOR* 🔥\n`;
-  msg += `----------------------------------\n`;
-  msg += `👤 *Cliente:* ${name}\n`;
-  msg += `🛵 *Tipo:* ${deliveryType}\n`;
+      let msg = `🔥 *NOVO PEDIDO - CHURRASCO BOM SABOR* 🔥\n`;
+      msg += `----------------------------------\n`;
+      msg += `👤 *Cliente:* ${name}\n`;
+      msg += `🛵 *Tipo:* ${deliveryType}\n`;
 
-  if (deliveryType === 'Entrega') {
-    msg += `📍 *Endereço:* ${street}, Bairro: ${bairro}\n`;
-    if (ref) msg += `🏠 *Ref:* ${ref}\n`;
-  } else {
-    msg += `📍 *Retirada:* Rua Severo, N 56 - Residência do João Rocha\n`;
-  }
+      if (deliveryType === 'Entrega') {
+        msg += `📍 *Endereço:* ${street}, Bairro: ${bairro}\n`;
+        if (ref) msg += `🏠 *Ref:* ${ref}\n`;
+      } else {
+        msg += `📍 *Retirada:* Rua Severo, N 56 - Residência do João Rocha\n`;
+      }
 
-  msg += `----------------------------------\n`;
-  msg += `📋 *ITENS DO PEDIDO:*\n${textItems}`;
-  msg += `----------------------------------\n`;
-  msg += `💰 *Valor Total:* *R$ ${total.toFixed(2).replace('.', ',')}*\n`;
-  msg += `💳 *Pagamento:* ${payment}\n`;
-  if (payment === 'Dinheiro' && change) msg += `💵 *Troco:* ${change}\n`;
-  if (notes) msg += `📝 *Obs:* ${notes}\n`;
-  msg += `----------------------------------\n`;
+      msg += `----------------------------------\n`;
+      msg += `📋 *ITENS DO PEDIDO:*\n${textItems}`;
+      msg += `----------------------------------\n`;
+      msg += `💰 *Valor Total:* *R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+      msg += `💳 *Pagamento:* ${payment}\n`;
+      if (payment === 'Dinheiro' && change) msg += `💵 *Troco:* ${change}\n`;
+      if (notes) msg += `📝 *Obs:* ${notes}\n`;
+      msg += `----------------------------------\n`;
 
-  const cleanPhone = targetWhatsApp.replace(/\D/g, '');
-  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-};
+      const cleanPhone = targetWhatsApp.replace(/\D/g, '');
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
   </script>
 </body>
