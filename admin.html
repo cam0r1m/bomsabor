@@ -74,11 +74,11 @@
         <p class="text-[11px] text-zinc-500">Insira o código do país + DDD + número (Ex: 5598985190033)</p>
       </section>
 
-      <!-- GESTÃO DO CARDÁPIO -->
+      <!-- GESTÃO DO CARDÁPIO (ESPETINHOS) -->
       <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-4">
         <div class="flex justify-between items-center">
           <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-utensils text-amber-500"></i> Gestão do Cardápio
+            <i class="fa-solid fa-utensils text-amber-500"></i> Espetinhos
           </h2>
           <button onclick="openProductModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
             <i class="fa-solid fa-plus"></i> Novo Item
@@ -90,11 +90,27 @@
         </div>
       </section>
 
+      <!-- GESTÃO DE BEBIDAS -->
+      <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-bottle-water text-amber-500"></i> Gestão de Bebidas
+          </h2>
+          <button onclick="openDrinkModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> Nova Bebida
+          </button>
+        </div>
+
+        <div id="admin-bebidas-list" class="space-y-3">
+          <!-- Lista dinâmica de bebidas -->
+        </div>
+      </section>
+
     </main>
 
   </div>
 
-  <!-- MODAL DE ADD / EDITAR PRODUTO -->
+  <!-- MODAL DE ADD / EDITAR PRODUTO (ESPETINHOS) -->
   <div id="product-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
@@ -146,19 +162,54 @@
     </div>
   </div>
 
+  <!-- MODAL DE ADD / EDITAR BEBIDA -->
+  <div id="drink-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+        <h3 id="drink-modal-title" class="text-base font-bold text-amber-500">Adicionar Bebida</h3>
+        <button onclick="closeDrinkModal()" class="text-zinc-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="drink-form" onsubmit="saveDrink(event)" class="space-y-3">
+        <input type="hidden" id="drink-id">
+
+        <div>
+          <label class="block text-xs text-zinc-300 mb-1">Nome da Bebida</label>
+          <input type="text" id="drink-nome" required placeholder="Ex: Coca-Cola Zero (350ml)" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+        </div>
+
+        <div>
+          <label class="block text-xs text-zinc-300 mb-1">Preço (R$)</label>
+          <input type="number" step="0.5" id="drink-preco" required placeholder="6.00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" id="drink-disponivel" checked class="w-4 h-4 accent-amber-500">
+          <label for="drink-disponivel" class="text-xs text-zinc-300">Bebida Ativa / Disponível no Cardápio</label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="closeDrinkModal()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-bold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 bg-amber-500 text-black rounded-lg text-xs font-bold">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     // ========================================================
     // 1. CONFIGURAÇÃO DO FIREBASE
     // ========================================================
     const firebaseConfig = {
-  apiKey: "AIzaSyCHQhXMtPfkD9j4KCJPPjgk1c_eRZe3WHA",
-  authDomain: "churrasco-bom-sabor.firebaseapp.com",
-  projectId: "churrasco-bom-sabor",
-  storageBucket: "churrasco-bom-sabor.firebasestorage.app",
-  messagingSenderId: "608833389532",
-  appId: "1:608833389532:web:3cfed1e270553cc9030519"
-};
-
+      apiKey: "AIzaSyCHQhXMtPfkD9j4KCJPPjgk1c_eRZe3WHA",
+      authDomain: "churrasco-bom-sabor.firebaseapp.com",
+      projectId: "churrasco-bom-sabor",
+      storageBucket: "churrasco-bom-sabor.firebasestorage.app",
+      messagingSenderId: "608833389532",
+      appId: "1:608833389532:web:3cfed1e270553cc9030519"
+    };
 
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
@@ -212,10 +263,16 @@
         updateStatusUI();
       });
 
-      // Escuta Produtos
+      // Escuta Produtos (Espetinhos)
       db.ref('produtos').on('value', (snapshot) => {
         const products = snapshot.val() || {};
         renderAdminProducts(products);
+      });
+
+      // Escuta Bebidas
+      db.ref('bebidas').on('value', (snapshot) => {
+        const bebidas = snapshot.val() || {};
+        renderAdminBebidas(bebidas);
       });
     }
 
@@ -251,7 +308,7 @@
     }
 
     // ========================================================
-    // 4. CRUD DE PRODUTOS
+    // 4. CRUD DE ESPETINHOS
     // ========================================================
     function renderAdminProducts(products) {
       const container = document.getElementById('admin-products-list');
@@ -343,6 +400,96 @@
     function deleteProduct(key) {
       if (confirm("Tem certeza que deseja excluir este espetinho?")) {
         db.ref(`produtos/${key}`).remove();
+      }
+    }
+
+    // ========================================================
+    // 5. CRUD DE BEBIDAS
+    // ========================================================
+    function renderAdminBebidas(bebidas) {
+      const container = document.getElementById('admin-bebidas-list');
+      container.innerHTML = '';
+
+      const keys = Object.keys(bebidas);
+      if (keys.length === 0) {
+        container.innerHTML = '<p class="text-xs text-zinc-500">Nenhuma bebida cadastrada.</p>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const b = bebidas[key];
+        const card = document.createElement('div');
+        card.className = "bg-zinc-800/60 p-3 rounded-xl border border-zinc-700/60 flex items-center justify-between";
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-amber-500">
+              <i class="fa-solid fa-bottle-water text-lg"></i>
+            </div>
+            <div>
+              <p class="font-bold text-sm text-white">${b.nome} ${b.disponivel ? '' : '<span class="text-[10px] bg-red-900 text-red-200 px-1 rounded">(Indisponível)</span>'}</p>
+              <p class="text-xs text-amber-400 font-semibold">R$ ${parseFloat(b.preco || 0).toFixed(2)}</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editDrink('${key}')" class="text-amber-400 hover:text-amber-300 p-2 bg-zinc-800 rounded-lg">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="deleteDrink('${key}')" class="text-red-400 hover:text-red-300 p-2 bg-zinc-800 rounded-lg">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openDrinkModal(drinkId = null) {
+      document.getElementById('drink-form').reset();
+      document.getElementById('drink-id').value = '';
+      document.getElementById('drink-modal-title').innerText = "Adicionar Bebida";
+
+      if (drinkId) {
+        db.ref(`bebidas/${drinkId}`).once('value', (snapshot) => {
+          const b = snapshot.val();
+          if (b) {
+            document.getElementById('drink-id').value = drinkId;
+            document.getElementById('drink-nome').value = b.nome || '';
+            document.getElementById('drink-preco').value = b.preco || 6;
+            document.getElementById('drink-disponivel').checked = b.disponivel ?? true;
+            document.getElementById('drink-modal-title').innerText = "Editar Bebida";
+          }
+        });
+      }
+
+      document.getElementById('drink-modal').classList.remove('hidden');
+    }
+
+    function closeDrinkModal() {
+      document.getElementById('drink-modal').classList.add('hidden');
+    }
+
+    function editDrink(key) {
+      openDrinkModal(key);
+    }
+
+    function saveDrink(event) {
+      event.preventDefault();
+      const id = document.getElementById('drink-id').value || db.ref('bebidas').push().key;
+
+      const data = {
+        nome: document.getElementById('drink-nome').value,
+        preco: parseFloat(document.getElementById('drink-preco').value),
+        disponivel: document.getElementById('drink-disponivel').checked
+      };
+
+      db.ref(`bebidas/${id}`).set(data).then(() => {
+        closeDrinkModal();
+      });
+    }
+
+    function deleteDrink(key) {
+      if (confirm("Tem certeza que deseja excluir esta bebida?")) {
+        db.ref(`bebidas/${key}`).remove();
       }
     }
   </script>
