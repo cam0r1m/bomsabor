@@ -3,205 +3,178 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Admin - Churrasco Bom Sabor</title>
+  <title>Churrasco Bom Sabor - Cardápio & Pedidos Online</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Firebase SDK Compat -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen pb-12">
+<body class="bg-zinc-950 text-zinc-100 font-sans pb-28 min-h-screen">
 
-  <!-- TELA DE LOGIN / AUTENTICAÇÃO -->
-  <div id="auth-screen" class="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-sm text-center shadow-2xl space-y-4">
-      <div class="inline-block p-3 bg-amber-500/10 rounded-full border border-amber-500/20 text-amber-500">
-        <i class="fa-solid fa-lock text-2xl"></i>
+  <!-- CABEÇALHO / HERO -->
+  <header class="relative bg-gradient-to-b from-amber-900/60 to-zinc-950 pt-6 pb-4 px-4 text-center border-b border-amber-900/30">
+    <div class="max-w-md mx-auto">
+      <div class="inline-block p-2 bg-amber-500/10 rounded-full mb-2 border border-amber-500/20">
+        <i class="fa-solid font-bold fa-fire-burner text-amber-500 text-3xl"></i>
       </div>
-      <h2 class="text-xl font-bold text-white">Painel Administrativo</h2>
-      <p class="text-xs text-zinc-400">Digite a senha para gerenciar seu restaurante.</p>
+      <h1 class="text-3xl font-extrabold tracking-tight text-white uppercase">
+        Churrasco <span class="text-amber-500">Bom Sabor</span> 🔥
+      </h1>
+      <p class="text-xs text-zinc-400 mt-1">O melhor churrasco na brasa da região!</p>
       
-      <input type="password" id="admin-pass" placeholder="Digite a senha" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-center text-white focus:outline-none focus:border-amber-500">
-      
-      <button onclick="checkAdminPassword()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2.5 rounded-lg text-sm transition-transform active:scale-95">
-        Acessar Painel
+      <div class="mt-3 text-xs text-zinc-300 bg-zinc-900/80 p-2.5 rounded-lg border border-zinc-800 flex flex-col gap-1 items-center">
+        <span><i class="fa-solid fa-location-dot text-amber-500 mr-1.5"></i> Rua Severo, N 56 - Residência do João Rocha</span>
+        <span><i class="fa-brands fa-whatsapp text-green-500 mr-1.5"></i> (98) 98519-0033 | (62) 98129-1339</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNER DE STATUS -->
+  <section class="max-w-md mx-auto px-4 my-4">
+    <div id="status-banner" class="w-full py-3 px-4 rounded-xl text-center font-bold text-sm shadow-lg flex items-center justify-center gap-2 bg-zinc-800 text-zinc-400">
+      <i class="fa-solid fa-circle-notch animate-spin"></i> Verificando status do restaurante...
+    </div>
+  </section>
+
+  <!-- LISTA DE PRODUTOS E CATEGORIAS -->
+  <main class="max-w-md mx-auto px-4 space-y-6">
+    <div id="loading-spinner" class="text-center py-12 text-zinc-500">
+      <i class="fa-solid fa-fire text-amber-500 text-3xl animate-bounce mb-2"></i>
+      <p>Carregando o cardápio gostoso...</p>
+    </div>
+
+    <!-- SEÇÃO ESPETINHOS -->
+    <section id="sec-espetinhos" class="hidden">
+      <h2 class="text-lg font-bold text-amber-500 mb-3 flex items-center gap-2 border-b border-zinc-800 pb-2">
+        <i class="fa-solid fa-utensils"></i> Espetinhos
+      </h2>
+      <div id="products-container" class="space-y-4"></div>
+    </section>
+
+    <!-- SEÇÃO BEBIDAS -->
+    <section id="sec-bebidas" class="hidden">
+      <h2 class="text-lg font-bold text-amber-500 mb-3 flex items-center gap-2 border-b border-zinc-800 pb-2">
+        <i class="fa-solid fa-bottle-water"></i> Bebidas
+      </h2>
+      <div id="bebidas-container" class="space-y-3"></div>
+    </section>
+
+    <!-- SEÇÃO ADICIONAIS -->
+    <section id="sec-adicionais" class="hidden">
+      <h2 class="text-lg font-bold text-amber-500 mb-3 flex items-center gap-2 border-b border-zinc-800 pb-2">
+        <i class="fa-solid fa-bowl-rice"></i> Adicionais / Acompanhamentos
+      </h2>
+      <div id="adicionais-container" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <!-- BARRA FLUTUANTE DO CARRINHO -->
+  <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-t border-amber-500/30 p-4 shadow-2xl transition-transform transform translate-y-full z-40">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div>
+        <p class="text-xs text-zinc-400">Total do Pedido</p>
+        <p id="cart-total-price" class="text-xl font-black text-amber-400">R$ 0,00</p>
+      </div>
+      <button onclick="openCheckoutModal()" class="bg-gradient-to-r from-amber-500 to-red-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg flex items-center gap-2 active:scale-95">
+        <span>Ver Carrinho</span>
+        <span id="cart-count-badge" class="bg-black/30 text-white text-xs px-2 py-0.5 rounded-full">0</span>
       </button>
-      <p id="auth-error" class="text-xs text-red-500 hidden">Senha incorreta!</p>
     </div>
   </div>
 
-  <!-- CONTEÚDO DO PAINEL ADMIN -->
-  <div id="admin-dashboard" class="hidden">
-    
-    <!-- Cabeçalho Admin -->
-    <header class="bg-zinc-900 border-b border-zinc-800 p-4 sticky top-0 z-30">
-      <div class="max-w-xl mx-auto flex justify-between items-center">
-        <h1 class="text-lg font-bold text-amber-500 flex items-center gap-2">
-          <i class="fa-solid fa-sliders"></i> Admin - Bom Sabor
-        </h1>
-        <button onclick="logoutAdmin()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-zinc-300">
-          <i class="fa-solid fa-right-from-bracket mr-1"></i> Sair
-        </button>
-      </div>
-    </header>
-
-    <main class="max-w-xl mx-auto p-4 space-y-6">
+  <!-- MODAL CHECKOUT -->
+  <div id="checkout-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       
-      <!-- CONTROLE DE FUNCIONAMENTO (LIGAR / DESLIGAR) -->
-      <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg text-center space-y-3">
-        <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Status do Restaurante</h2>
+      <div class="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-950">
+        <h3 class="text-lg font-bold text-amber-500 flex items-center gap-2"><i class="fa-solid fa-cart-shopping"></i> Finalizar Pedido</h3>
+        <button onclick="closeCheckoutModal()" class="text-zinc-400 hover:text-white text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4 flex-1">
+        <div>
+          <h4 class="text-xs font-semibold text-zinc-400 uppercase mb-2">Itens Selecionados</h4>
+          <div id="modal-cart-items" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="space-y-3 pt-2 border-t border-zinc-800">
+          <h4 class="text-xs font-semibold text-zinc-400 uppercase">Seus Dados</h4>
+          <div>
+            <label class="block text-xs text-zinc-300 mb-1">Seu Nome *</label>
+            <input type="text" id="cust-name" placeholder="Ex: João Rocha" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+          </div>
+
+          <div>
+            <label class="block text-xs text-zinc-300 mb-1">Opção de Entrega *</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 bg-zinc-800 border border-zinc-700 p-2.5 rounded-lg text-xs cursor-pointer">
+                <input type="radio" name="delivery-type" value="Entrega" checked onchange="toggleDeliveryFields()" class="accent-amber-500">
+                <span><i class="fa-solid fa-motorcycle text-amber-500 mr-1"></i> Entrega</span>
+              </label>
+              <label class="flex items-center gap-2 bg-zinc-800 border border-zinc-700 p-2.5 rounded-lg text-xs cursor-pointer">
+                <input type="radio" name="delivery-type" value="Retirada" onchange="toggleDeliveryFields()" class="accent-amber-500">
+                <span><i class="fa-solid fa-store text-amber-500 mr-1"></i> Retirada</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="address-fields" class="space-y-2">
+            <div>
+              <label class="block text-xs text-zinc-300 mb-1">Endereço / Rua e Número *</label>
+              <input type="text" id="cust-street" placeholder="Ex: Rua das Flores, 123" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs text-zinc-300 mb-1">Bairro *</label>
+                <input type="text" id="cust-bairro" placeholder="Ex: Centro" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-300 mb-1">Ponto de Referência</label>
+                <input type="text" id="cust-ref" placeholder="Ex: Próximo à praça" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+              </div>
+            </div>
+          </div>
+
+          <div id="pickup-notice" class="hidden text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 p-2.5 rounded-lg">
+            📍 <strong>Local de Retirada:</strong> Rua Severo, N 56 - Residência do João Rocha.
+          </div>
+
+          <div>
+            <label class="block text-xs text-zinc-300 mb-1">Forma de Pagamento *</label>
+            <select id="cust-payment" onchange="toggleChangeInput()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+              <option value="Pix">Pix</option>
+              <option value="Cartão de Crédito/Débito">Cartão de Crédito / Débito</option>
+              <option value="Dinheiro">Dinheiro</option>
+            </select>
+          </div>
+
+          <div id="change-field" class="hidden">
+            <label class="block text-xs text-zinc-300 mb-1">Precisa de troco para quanto?</label>
+            <input type="text" id="cust-change" placeholder="Ex: Troco para R$ 50,00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+          </div>
+
+          <div>
+            <label class="block text-xs text-zinc-300 mb-1">Observações do Pedido</label>
+            <textarea id="cust-notes" rows="2" placeholder="Ex: Sem vinagrete..." class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-sm text-white"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-zinc-800 bg-zinc-950 space-y-3">
+        <div class="flex justify-between items-center font-bold">
+          <span class="text-zinc-300">Total a pagar:</span>
+          <span id="modal-total-price" class="text-amber-400 text-xl font-black">R$ 0,00</span>
+        </div>
         
-        <div id="status-indicator" class="text-sm font-bold py-2 px-4 rounded-lg inline-block">
-          Carregando status...
-        </div>
-
-        <button id="toggle-status-btn" onclick="toggleStoreStatus()" class="w-full py-4 rounded-xl font-black text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-power-off"></i> Alterar Status
-        </button>
-      </section>
-
-      <!-- CONFIGURAÇÃO DO WHATSAPP -->
-      <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-3">
-        <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-          <i class="fa-brands fa-whatsapp text-green-500"></i> Número do WhatsApp para Pedidos
-        </h2>
-        <div class="flex gap-2">
-          <input type="text" id="admin-whatsapp" placeholder="Ex: 5598985190033" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-          <button onclick="saveWhatsAppConfig()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-4 rounded-lg text-xs">
-            Salvar
-          </button>
-        </div>
-        <p class="text-[11px] text-zinc-500">Insira o código do país + DDD + número (Ex: 5598985190033)</p>
-      </section>
-
-      <!-- GESTÃO DO CARDÁPIO (ESPETINHOS) -->
-      <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-utensils text-amber-500"></i> Espetinhos
-          </h2>
-          <button onclick="openProductModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
-            <i class="fa-solid fa-plus"></i> Novo Item
-          </button>
-        </div>
-
-        <div id="admin-products-list" class="space-y-3">
-          <!-- Lista dinâmica -->
-        </div>
-      </section>
-
-      <!-- GESTÃO DE BEBIDAS -->
-      <section class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl shadow-lg space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-bottle-water text-amber-500"></i> Gestão de Bebidas
-          </h2>
-          <button onclick="openDrinkModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
-            <i class="fa-solid fa-plus"></i> Nova Bebida
-          </button>
-        </div>
-
-        <div id="admin-bebidas-list" class="space-y-3">
-          <!-- Lista dinâmica de bebidas -->
-        </div>
-      </section>
-
-    </main>
-
-  </div>
-
-  <!-- MODAL DE ADD / EDITAR PRODUTO (ESPETINHOS) -->
-  <div id="product-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-        <h3 id="modal-title" class="text-base font-bold text-amber-500">Adicionar Produto</h3>
-        <button onclick="closeProductModal()" class="text-zinc-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
+        <button id="submit-order-btn" onclick="sendOrderToWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm">
+          <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Pedido via WhatsApp
         </button>
       </div>
-
-      <form id="product-form" onsubmit="saveProduct(event)" class="space-y-3">
-        <input type="hidden" id="prod-id">
-
-        <div>
-          <label class="block text-xs text-zinc-300 mb-1">Nome do Espetinho / Item</label>
-          <input type="text" id="prod-nome" required placeholder="Ex: Espeto de Carne Bovina" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-        </div>
-
-        <div>
-          <label class="block text-xs text-zinc-300 mb-1">Descrição</label>
-          <input type="text" id="prod-descricao" placeholder="Ex: Suculento espeto assado na brasa" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs text-zinc-300 mb-1">Preço Simples (R$)</label>
-            <input type="number" step="0.5" id="prod-preco-simples" required placeholder="10.00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-          </div>
-          <div>
-            <label class="block text-xs text-zinc-300 mb-1">Preço Completo (R$)</label>
-            <input type="number" step="0.5" id="prod-preco-completo" required placeholder="20.00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs text-zinc-300 mb-1">URL da Imagem</label>
-          <input type="url" id="prod-imagem" placeholder="https://..." class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-        </div>
-
-        <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="prod-disponivel" checked class="w-4 h-4 accent-amber-500">
-          <label for="prod-disponivel" class="text-xs text-zinc-300">Produto Ativo / Disponível</label>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-3">
-          <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-bold">Cancelar</button>
-          <button type="submit" class="px-5 py-2 bg-amber-500 text-black rounded-lg text-xs font-bold">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL DE ADD / EDITAR BEBIDA -->
-  <div id="drink-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-        <h3 id="drink-modal-title" class="text-base font-bold text-amber-500">Adicionar Bebida</h3>
-        <button onclick="closeDrinkModal()" class="text-zinc-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <form id="drink-form" onsubmit="saveDrink(event)" class="space-y-3">
-        <input type="hidden" id="drink-id">
-
-        <div>
-          <label class="block text-xs text-zinc-300 mb-1">Nome da Bebida</label>
-          <input type="text" id="drink-nome" required placeholder="Ex: Coca-Cola Zero (350ml)" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-        </div>
-
-        <div>
-          <label class="block text-xs text-zinc-300 mb-1">Preço (R$)</label>
-          <input type="number" step="0.5" id="drink-preco" required placeholder="6.00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
-        </div>
-
-        <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="drink-disponivel" checked class="w-4 h-4 accent-amber-500">
-          <label for="drink-disponivel" class="text-xs text-zinc-300">Bebida Ativa / Disponível no Cardápio</label>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-3">
-          <button type="button" onclick="closeDrinkModal()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-bold">Cancelar</button>
-          <button type="submit" class="px-5 py-2 bg-amber-500 text-black rounded-lg text-xs font-bold">Salvar</button>
-        </div>
-      </form>
     </div>
   </div>
 
   <script>
-    // ========================================================
-    // 1. CONFIGURAÇÃO DO FIREBASE
-    // ========================================================
     const firebaseConfig = {
       apiKey: "AIzaSyCHQhXMtPfkD9j4KCJPPjgk1c_eRZe3WHA",
       authDomain: "churrasco-bom-sabor.firebaseapp.com",
@@ -211,286 +184,316 @@
       appId: "1:608833389532:web:3cfed1e270553cc9030519"
     };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const HARDCODED_PASS = "churrasco2026";
+    let cart = {}; // { key: { cartKey, nome, tipo, categoria, preco, qty } }
     let isStoreOpen = false;
+    let targetWhatsApp = "5598985190033";
 
-    // ========================================================
-    // 2. AUTENTICAÇÃO
-    // ========================================================
     document.addEventListener('DOMContentLoaded', () => {
-      if (sessionStorage.getItem('admin_authenticated') === 'true') {
-        showDashboard();
-      }
+      listenStoreConfig();
+      listenMenuData();
+      loadUserDataFromLocalStorage();
     });
 
-    function checkAdminPassword() {
-      const input = document.getElementById('admin-pass').value;
-      if (input === HARDCODED_PASS) {
-        sessionStorage.setItem('admin_authenticated', 'true');
-        showDashboard();
-      } else {
-        document.getElementById('auth-error').classList.remove('hidden');
-      }
-    }
-
-    function showDashboard() {
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('admin-dashboard').classList.remove('hidden');
-      listenAdminData();
-    }
-
-    function logoutAdmin() {
-      sessionStorage.removeItem('admin_authenticated');
-      window.location.reload();
-    }
-
-    // ========================================================
-    // 3. LEITURA E ALTERAÇÃO DO STATUS
-    // ========================================================
-    function listenAdminData() {
-      // Escuta Configuração
+    function listenStoreConfig() {
       db.ref('config').on('value', (snapshot) => {
         const config = snapshot.val() || {};
         isStoreOpen = config.aberto ?? true;
-        if (config.whatsapp) {
-          document.getElementById('admin-whatsapp').value = config.whatsapp;
+        if (config.whatsapp) targetWhatsApp = config.whatsapp;
+
+        const banner = document.getElementById('status-banner');
+        const submitBtn = document.getElementById('submit-order-btn');
+
+        if (isStoreOpen) {
+          banner.className = "w-full py-3 px-4 rounded-xl text-center font-bold text-sm shadow-lg flex items-center justify-center gap-2 bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 animate-pulse";
+          banner.innerHTML = '<i class="fa-solid fa-fire text-amber-500"></i> ESTAMOS ABERTOS - Faça seu pedido!';
+          submitBtn.disabled = false;
+          submitBtn.className = "w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm cursor-pointer";
+        } else {
+          banner.className = "w-full py-3 px-4 rounded-xl text-center font-bold text-sm shadow-lg flex items-center justify-center gap-2 bg-red-950/60 border border-red-800/50 text-red-400";
+          banner.innerHTML = '<i class="fa-solid fa-store-slash"></i> FECHADO NO MOMENTO';
+          submitBtn.disabled = true;
+          submitBtn.className = "w-full bg-zinc-800 text-zinc-500 font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm cursor-not-allowed opacity-60";
         }
-        updateStatusUI();
       });
+    }
 
-      // Escuta Produtos (Espetinhos)
+    function listenMenuData() {
+      // Listener Espetinhos
       db.ref('produtos').on('value', (snapshot) => {
-        const products = snapshot.val() || {};
-        renderAdminProducts(products);
+        renderEspetinhos(snapshot.val() || {});
+        checkLoaded();
       });
 
-      // Escuta Bebidas
+      // Listener Bebidas
       db.ref('bebidas').on('value', (snapshot) => {
-        const bebidas = snapshot.val() || {};
-        renderAdminBebidas(bebidas);
+        renderSimpleCategory('bebidas', snapshot.val() || {});
+        checkLoaded();
+      });
+
+      // Listener Adicionais
+      db.ref('adicionais').on('value', (snapshot) => {
+        renderSimpleCategory('adicionais', snapshot.val() || {});
+        checkLoaded();
       });
     }
 
-    function updateStatusUI() {
-      const indicator = document.getElementById('status-indicator');
-      const btn = document.getElementById('toggle-status-btn');
+    function checkLoaded() {
+      document.getElementById('loading-spinner').classList.add('hidden');
+      document.getElementById('sec-espetinhos').classList.remove('hidden');
+    }
 
-      if (isStoreOpen) {
-        indicator.className = "text-sm font-bold py-2 px-4 rounded-lg inline-block bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
-        indicator.innerHTML = '<i class="fa-solid fa-circle text-xs mr-1 animate-pulse"></i> RESTAURANTE ABERTO';
+    // RENDERIZAR ESPETINHOS
+    function renderEspetinhos(products) {
+      const container = document.getElementById('products-container');
+      container.innerHTML = '';
 
-        btn.className = "w-full py-4 rounded-xl font-black text-lg shadow-xl bg-red-600 hover:bg-red-700 text-white transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer";
-        btn.innerHTML = '<i class="fa-solid fa-power-off"></i> FECHAR RESTAURANTE AGORA';
+      Object.keys(products).forEach(key => {
+        const item = products[key];
+        if (!item.disponivel) return;
+
+        const card = document.createElement('div');
+        card.className = "bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-md flex flex-col";
+        card.innerHTML = `
+          <div class="relative h-36 bg-zinc-800">
+            <img src="${item.imagem || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80'}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent"></div>
+          </div>
+          <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+            <div>
+              <h3 class="font-bold text-base text-white">${item.nome}</h3>
+              <p class="text-xs text-zinc-400 mt-1">${item.descricao || ''}</p>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-zinc-800/60">
+              <div class="flex items-center justify-between bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/50">
+                <div>
+                  <p class="text-xs font-semibold text-amber-400">Completo</p>
+                  <p class="text-[10px] text-zinc-400">Baião + Vinagrete + Farofa</p>
+                  <p class="text-xs font-bold text-white">R$ ${(item.precoCompleto || 20).toFixed(2).replace('.', ',')}</p>
+                </div>
+                ${renderQtyBtn(`${key}_Completo`, item.nome, 'Completo', 'Espetinho', item.precoCompleto || 20)}
+              </div>
+              <div class="flex items-center justify-between bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/50">
+                <div>
+                  <p class="text-xs font-semibold text-zinc-300">Simples</p>
+                  <p class="text-[10px] text-zinc-400">Apenas o espetinho</p>
+                  <p class="text-xs font-bold text-white">R$ ${(item.precoSimples || 10).toFixed(2).replace('.', ',')}</p>
+                </div>
+                ${renderQtyBtn(`${key}_Simples`, item.nome, 'Simples', 'Espetinho', item.precoSimples || 10)}
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      updateCartUI();
+    }
+
+    // RENDERIZAR BEBIDAS E ADICIONAIS
+    function renderSimpleCategory(nodeType, items) {
+      const container = document.getElementById(`${nodeType}-container`);
+      const section = document.getElementById(`sec-${nodeType}`);
+      container.innerHTML = '';
+
+      let availableCount = 0;
+
+      Object.keys(items).forEach(key => {
+        const item = items[key];
+        if (!item.disponivel) return;
+
+        availableCount++;
+        const cartKey = `${nodeType}_${key}`;
+        const catLabel = nodeType === 'bebidas' ? 'Bebida' : 'Adicional';
+
+        const div = document.createElement('div');
+        div.className = "bg-zinc-900 border border-zinc-800/80 p-3 rounded-xl flex items-center justify-between";
+        div.innerHTML = `
+          <div>
+            <p class="font-bold text-sm text-white">${item.nome}</p>
+            <p class="text-xs font-bold text-amber-400">R$ ${parseFloat(item.preco||0).toFixed(2).replace('.', ',')}</p>
+          </div>
+          ${renderQtyBtn(cartKey, item.nome, '', catLabel, item.preco)}
+        `;
+        container.appendChild(div);
+      });
+
+      // Se não houver itens disponíveis nesta categoria, esconde a seção inteira do cardápio
+      if (availableCount === 0) {
+        section.classList.add('hidden');
       } else {
-        indicator.className = "text-sm font-bold py-2 px-4 rounded-lg inline-block bg-red-500/10 border border-red-500/30 text-red-400";
-        indicator.innerHTML = '<i class="fa-solid fa-circle text-xs mr-1"></i> RESTAURANTE FECHADO';
+        section.classList.remove('hidden');
+      }
 
-        btn.className = "w-full py-4 rounded-xl font-black text-lg shadow-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer";
-        btn.innerHTML = '<i class="fa-solid fa-power-off"></i> ABRIR RESTAURANTE AGORA';
+      updateCartUI();
+    }
+
+    function renderQtyBtn(cartKey, name, type, category, price) {
+      const qty = cart[cartKey] ? cart[cartKey].qty : 0;
+      if (qty === 0) {
+        return `
+          <button onclick="addToCart('${cartKey}', '${name}', '${type}', '${category}', ${price})" 
+                  class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold py-1.5 px-3 rounded-lg active:scale-95">
+            + Adicionar
+          </button>
+        `;
+      }
+      return `
+        <div class="flex items-center gap-2 bg-zinc-800 rounded-lg p-1 border border-zinc-700">
+          <button onclick="updateQty('${cartKey}', -1)" class="w-6 h-6 rounded bg-zinc-700 text-white font-bold text-xs flex items-center justify-center">-</button>
+          <span class="text-xs font-bold w-4 text-center text-white">${qty}</span>
+          <button onclick="updateQty('${cartKey}', 1)" class="w-6 h-6 rounded bg-amber-500 text-black font-bold text-xs flex items-center justify-center">+</button>
+        </div>
+      `;
+    }
+
+    function addToCart(cartKey, nome, tipo, categoria, preco) {
+      cart[cartKey] = { cartKey, nome, tipo, categoria, preco: parseFloat(preco), qty: 1 };
+      refreshAllViews();
+    }
+
+    function updateQty(cartKey, delta) {
+      if (!cart[cartKey]) return;
+      cart[cartKey].qty += delta;
+      if (cart[cartKey].qty <= 0) delete cart[cartKey];
+      refreshAllViews();
+    }
+
+    function refreshAllViews() {
+      db.ref('produtos').once('value', s => renderEspetinhos(s.val() || {}));
+      db.ref('bebidas').once('value', s => renderSimpleCategory('bebidas', s.val() || {}));
+      db.ref('adicionais').once('value', s => renderSimpleCategory('adicionais', s.val() || {}));
+      renderModalCartItems();
+    }
+
+    function updateCartUI() {
+      let totalQty = 0;
+      let totalPrice = 0;
+      Object.values(cart).forEach(item => {
+        totalQty += item.qty;
+        totalPrice += item.preco * item.qty;
+      });
+
+      const cartBar = document.getElementById('cart-bar');
+      document.getElementById('cart-count-badge').innerText = totalQty;
+      document.getElementById('cart-total-price').innerText = `R$ ${totalPrice.toFixed(2).replace('.', ',')}`;
+      document.getElementById('modal-total-price').innerText = `R$ ${totalPrice.toFixed(2).replace('.', ',')}`;
+
+      if (totalQty > 0) cartBar.classList.remove('translate-y-full');
+      else {
+        cartBar.classList.add('translate-y-full');
+        closeCheckoutModal();
       }
     }
 
-    function toggleStoreStatus() {
-      db.ref('config/aberto').set(!isStoreOpen);
-    }
+    function openCheckoutModal() { renderModalCartItems(); document.getElementById('checkout-modal').classList.remove('hidden'); }
+    function closeCheckoutModal() { document.getElementById('checkout-modal').classList.add('hidden'); }
 
-    function saveWhatsAppConfig() {
-      const phone = document.getElementById('admin-whatsapp').value.trim();
-      if (!phone) return alert("Digite um número válido");
-      db.ref('config/whatsapp').set(phone).then(() => {
-        alert("Número do WhatsApp atualizado com sucesso!");
-      });
-    }
-
-    // ========================================================
-    // 4. CRUD DE ESPETINHOS
-    // ========================================================
-    function renderAdminProducts(products) {
-      const container = document.getElementById('admin-products-list');
+    function renderModalCartItems() {
+      const container = document.getElementById('modal-cart-items');
       container.innerHTML = '';
+      const items = Object.values(cart);
 
-      const keys = Object.keys(products);
-      if (keys.length === 0) {
-        container.innerHTML = '<p class="text-xs text-zinc-500">Nenhum produto cadastrado.</p>';
+      if (items.length === 0) {
+        container.innerHTML = '<p class="text-xs text-zinc-500">Seu carrinho está vazio.</p>';
         return;
       }
 
-      keys.forEach(key => {
-        const p = products[key];
-        const card = document.createElement('div');
-        card.className = "bg-zinc-800/60 p-3 rounded-xl border border-zinc-700/60 flex items-center justify-between";
-        card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${p.imagem || 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded-lg border border-zinc-700">
-            <div>
-              <p class="font-bold text-sm text-white">${p.nome} ${p.disponivel ? '' : '<span class="text-[10px] bg-red-900 text-red-200 px-1 rounded">(Indisponível)</span>'}</p>
-              <p class="text-xs text-amber-400 font-semibold">Simples: R$ ${parseFloat(p.precoSimples || 0).toFixed(2)} | Completo: R$ ${parseFloat(p.precoCompleto || 0).toFixed(2)}</p>
-            </div>
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "flex justify-between items-center bg-zinc-800/60 p-2.5 rounded-lg border border-zinc-800 text-xs";
+        const labelText = item.tipo ? `${item.nome} (${item.tipo})` : item.nome;
+        div.innerHTML = `
+          <div>
+            <p class="font-bold text-white">${labelText}</p>
+            <p class="text-zinc-400">R$ ${item.preco.toFixed(2).replace('.', ',')} x ${item.qty}</p>
           </div>
-          <div class="flex gap-2">
-            <button onclick="editProduct('${key}')" class="text-amber-400 hover:text-amber-300 p-2 bg-zinc-800 rounded-lg">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button onclick="deleteProduct('${key}')" class="text-red-400 hover:text-red-300 p-2 bg-zinc-800 rounded-lg">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-amber-400">R$ ${(item.preco * item.qty).toFixed(2).replace('.', ',')}</span>
+            <button onclick="updateQty('${item.cartKey}', -1)" class="text-red-400 p-1"><i class="fa-solid fa-trash"></i></button>
           </div>
         `;
-        container.appendChild(card);
+        container.appendChild(div);
       });
     }
 
-    function openProductModal(prodId = null) {
-      document.getElementById('product-form').reset();
-      document.getElementById('prod-id').value = '';
-      document.getElementById('modal-title').innerText = "Adicionar Produto";
+    function toggleDeliveryFields() {
+      const isDelivery = document.querySelector('input[name="delivery-type"]:checked').value === 'Entrega';
+      document.getElementById('address-fields').classList.toggle('hidden', !isDelivery);
+      document.getElementById('pickup-notice').classList.toggle('hidden', isDelivery);
+    }
 
-      if (prodId) {
-        db.ref(`produtos/${prodId}`).once('value', (snapshot) => {
-          const p = snapshot.val();
-          if (p) {
-            document.getElementById('prod-id').value = prodId;
-            document.getElementById('prod-nome').value = p.nome || '';
-            document.getElementById('prod-descricao').value = p.descricao || '';
-            document.getElementById('prod-preco-simples').value = p.precoSimples || 10;
-            document.getElementById('prod-preco-completo').value = p.precoCompleto || 20;
-            document.getElementById('prod-imagem').value = p.imagem || '';
-            document.getElementById('prod-disponivel').checked = p.disponivel ?? true;
-            document.getElementById('modal-title').innerText = "Editar Produto";
-          }
-        });
+    function toggleChangeInput() {
+      const isCash = document.getElementById('cust-payment').value === 'Dinheiro';
+      document.getElementById('change-field').classList.toggle('hidden', !isCash);
+    }
+
+    function loadUserDataFromLocalStorage() {
+      const saved = localStorage.getItem('churrasco_bom_sabor_cliente');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          if (data.nome) document.getElementById('cust-name').value = data.nome;
+          if (data.rua) document.getElementById('cust-street').value = data.rua;
+          if (data.bairro) document.getElementById('cust-bairro').value = data.bairro;
+          if (data.referencia) document.getElementById('cust-ref').value = data.referencia;
+        } catch (e) {}
       }
-
-      document.getElementById('product-modal').classList.remove('hidden');
     }
 
-    function closeProductModal() {
-      document.getElementById('product-modal').classList.add('hidden');
-    }
+    function sendOrderToWhatsApp() {
+      if (!isStoreOpen) return alert("O restaurante está fechado!");
 
-    function editProduct(key) {
-      openProductModal(key);
-    }
+      const items = Object.values(cart);
+      if (items.length === 0) return alert("Carrinho vazio!");
 
-    function saveProduct(event) {
-      event.preventDefault();
-      const id = document.getElementById('prod-id').value || db.ref('produtos').push().key;
+      const name = document.getElementById('cust-name').value.trim();
+      const deliveryType = document.querySelector('input[name="delivery-type"]:checked').value;
+      const street = document.getElementById('cust-street').value.trim();
+      const bairro = document.getElementById('cust-bairro').value.trim();
+      const ref = document.getElementById('cust-ref').value.trim();
+      const payment = document.getElementById('cust-payment').value;
+      const change = document.getElementById('cust-change').value.trim();
+      const notes = document.getElementById('cust-notes').value.trim();
 
-      const data = {
-        id: id,
-        nome: document.getElementById('prod-nome').value,
-        descricao: document.getElementById('prod-descricao').value,
-        precoSimples: parseFloat(document.getElementById('prod-preco-simples').value),
-        precoCompleto: parseFloat(document.getElementById('prod-preco-completo').value),
-        imagem: document.getElementById('prod-imagem').value || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80',
-        disponivel: document.getElementById('prod-disponivel').checked,
-        categoria: "Espetinhos"
-      };
+      if (!name) return alert("Preencha o seu Nome.");
+      if (deliveryType === 'Entrega' && (!street || !bairro)) return alert("Preencha o Endereço para entrega.");
 
-      db.ref(`produtos/${id}`).set(data).then(() => {
-        closeProductModal();
+      localStorage.setItem('churrasco_bom_sabor_cliente', JSON.stringify({ nome: name, rua: street, bairro: bairro, referencia: ref }));
+
+      let total = 0;
+      let textItems = "";
+      items.forEach(item => {
+        const subtotal = item.preco * item.qty;
+        total += subtotal;
+        const itemTitle = item.tipo ? `${item.nome} (${item.tipo})` : item.nome;
+        textItems += `• *${item.qty}x* ${itemTitle} - R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
       });
-    }
 
-    function deleteProduct(key) {
-      if (confirm("Tem certeza que deseja excluir este espetinho?")) {
-        db.ref(`produtos/${key}`).remove();
-      }
-    }
+      let msg = `🔥 *NOVO PEDIDO - CHURRASCO BOM SABOR* 🔥\n`;
+      msg += `----------------------------------\n`;
+      msg += `👤 *Cliente:* ${name}\n`;
+      msg += `🛵 *Tipo:* ${deliveryType}\n`;
 
-    // ========================================================
-    // 5. CRUD DE BEBIDAS
-    // ========================================================
-    function renderAdminBebidas(bebidas) {
-      const container = document.getElementById('admin-bebidas-list');
-      container.innerHTML = '';
-
-      const keys = Object.keys(bebidas);
-      if (keys.length === 0) {
-        container.innerHTML = '<p class="text-xs text-zinc-500">Nenhuma bebida cadastrada.</p>';
-        return;
+      if (deliveryType === 'Entrega') {
+        msg += `📍 *Endereço:* ${street}, Bairro: ${bairro}\n`;
+        if (ref) msg += `🏠 *Ref:* ${ref}\n`;
+      } else {
+        msg += `📍 *Retirada:* Rua Severo, N 56 - Residência do João Rocha\n`;
       }
 
-      keys.forEach(key => {
-        const b = bebidas[key];
-        const card = document.createElement('div');
-        card.className = "bg-zinc-800/60 p-3 rounded-xl border border-zinc-700/60 flex items-center justify-between";
-        card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-amber-500">
-              <i class="fa-solid fa-bottle-water text-lg"></i>
-            </div>
-            <div>
-              <p class="font-bold text-sm text-white">${b.nome} ${b.disponivel ? '' : '<span class="text-[10px] bg-red-900 text-red-200 px-1 rounded">(Indisponível)</span>'}</p>
-              <p class="text-xs text-amber-400 font-semibold">R$ ${parseFloat(b.preco || 0).toFixed(2)}</p>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="editDrink('${key}')" class="text-amber-400 hover:text-amber-300 p-2 bg-zinc-800 rounded-lg">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button onclick="deleteDrink('${key}')" class="text-red-400 hover:text-red-300 p-2 bg-zinc-800 rounded-lg">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+      msg += `----------------------------------\n`;
+      msg += `📋 *ITENS DO PEDIDO:*\n${textItems}`;
+      msg += `----------------------------------\n`;
+      msg += `💰 *Valor Total:* *R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+      msg += `💳 *Pagamento:* ${payment}\n`;
+      if (payment === 'Dinheiro' && change) msg += `💵 *Troco:* ${change}\n`;
+      if (notes) msg += `📝 *Obs:* ${notes}\n`;
+      msg += `----------------------------------\n`;
 
-    function openDrinkModal(drinkId = null) {
-      document.getElementById('drink-form').reset();
-      document.getElementById('drink-id').value = '';
-      document.getElementById('drink-modal-title').innerText = "Adicionar Bebida";
-
-      if (drinkId) {
-        db.ref(`bebidas/${drinkId}`).once('value', (snapshot) => {
-          const b = snapshot.val();
-          if (b) {
-            document.getElementById('drink-id').value = drinkId;
-            document.getElementById('drink-nome').value = b.nome || '';
-            document.getElementById('drink-preco').value = b.preco || 6;
-            document.getElementById('drink-disponivel').checked = b.disponivel ?? true;
-            document.getElementById('drink-modal-title').innerText = "Editar Bebida";
-          }
-        });
-      }
-
-      document.getElementById('drink-modal').classList.remove('hidden');
-    }
-
-    function closeDrinkModal() {
-      document.getElementById('drink-modal').classList.add('hidden');
-    }
-
-    function editDrink(key) {
-      openDrinkModal(key);
-    }
-
-    function saveDrink(event) {
-      event.preventDefault();
-      const id = document.getElementById('drink-id').value || db.ref('bebidas').push().key;
-
-      const data = {
-        nome: document.getElementById('drink-nome').value,
-        preco: parseFloat(document.getElementById('drink-preco').value),
-        disponivel: document.getElementById('drink-disponivel').checked
-      };
-
-      db.ref(`bebidas/${id}`).set(data).then(() => {
-        closeDrinkModal();
-      });
-    }
-
-    function deleteDrink(key) {
-      if (confirm("Tem certeza que deseja excluir esta bebida?")) {
-        db.ref(`bebidas/${key}`).remove();
-      }
+      const cleanPhone = targetWhatsApp.replace(/\D/g, '');
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
   </script>
 </body>
